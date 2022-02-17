@@ -6,6 +6,15 @@
 Bootstrap: docker
 From: ubuntu:20.04
 
+%labels
+  Author Patryk_Pjanka
+  Created 2022
+
+%help
+  A basic Ubuntu Singularity def file with ffmpeg installed
+  - follwing ffmpeg installation instructions from
+   https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
+
 %post
   # build-time variables
   nproc=8 # number of processors to use for the build, '' for all available
