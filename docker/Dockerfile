@@ -18,7 +18,8 @@ WORKDIR /opt/ffmpeg
 #  4) clean up compilation dependencies
 #  5) make binaries accessible for non-root users
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update -qq \
+RUN nproc=8 \
+ && apt-get update -qq \
  && apt-get -y --no-install-recommends install \
   autoconf \
   automake \
@@ -45,7 +46,8 @@ RUN apt-get update -qq \
   yasm \
   zlib1g-dev \
  && mkdir -p /opt/ffmpeg/ffmpeg_sources /opt/ffmpeg/bin
-RUN apt-get -y --no-install-recommends install \
+RUN nproc=8 \
+ && apt-get -y --no-install-recommends install \
   nasm \
   libx264-dev \
   libx265-dev libnuma-dev \
@@ -61,16 +63,16 @@ RUN apt-get -y --no-install-recommends install \
   git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && \
   mkdir -p aom_build && \
   cd aom_build && \
-  PATH="/opt/ffmpeg/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && \
-  PATH="/opt/ffmpeg/bin:$PATH" make && \
-  make install \
+  PATH="/opt/ffmpeg/bin:$PATH" cmake -j $nproc -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && \
+  PATH="/opt/ffmpeg/bin:$PATH" make -j $nproc && \
+  make -j $nproc install \
  && cd /opt/ffmpeg/ffmpeg_sources && \
   git -C SVT-AV1 pull 2> /dev/null || git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && \
   mkdir -p SVT-AV1/build && \
   cd SVT-AV1/build && \
-  PATH="/opt/ffmpeg/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && \
-  PATH="/opt/ffmpeg/bin:$PATH" make && \
-  make install \
+  PATH="/opt/ffmpeg/bin:$PATH" cmake -j $nproc -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && \
+  PATH="/opt/ffmpeg/bin:$PATH" make -j $nproc && \
+  make -j $nproc install \
  && apt install -y --no-install-recommends python3-pip && \
   pip3 install --user meson && \
   cd /opt/ffmpeg/ffmpeg_sources && \
@@ -78,8 +80,8 @@ RUN apt-get -y --no-install-recommends install \
   mkdir -p dav1d/build && \
   cd dav1d/build && \
   meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "/opt/ffmpeg/ffmpeg_build" --libdir="/opt/ffmpeg/ffmpeg_build/lib" && \
-  ninja && \
-  ninja install \
+  ninja -j $nproc && \
+  ninja -j $nproc install \
  && cd /opt/ffmpeg/ffmpeg_sources && \
   wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && \
   tar xvf v2.1.1.tar.gz && \
@@ -87,8 +89,8 @@ RUN apt-get -y --no-install-recommends install \
   cd vmaf-2.1.1/libvmaf/build && \
   meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "/opt/ffmpeg/ffmpeg_build" --bindir="/opt/ffmpeg/ffmpeg_build/bin" --libdir="/opt/ffmpeg/ffmpeg_build/lib" && \
   export PATH="$PATH:/opt/ffmpeg/ffmpeg_build/bin" && \
-  ninja && \
-  ninja install \
+  ninja -j $nproc && \
+  ninja -j $nproc install \
  && apt install -y --no-install-recommends libunistring-dev \
  && cd /opt/ffmpeg/ffmpeg_sources && \
   wget -O ffmpeg-snapshot.tar.bz2 https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
@@ -117,8 +119,8 @@ RUN apt-get -y --no-install-recommends install \
       --enable-libx264 \
       --enable-libx265 \
       --enable-nonfree && \
-  PATH="/opt/ffmpeg/bin:$PATH" make && \
-  make install && \
+  PATH="/opt/ffmpeg/bin:$PATH" make -j $nproc && \
+  make -j $nproc install && \
   hash -r \
  && . ~/.profile \
  && apt autoremove -y \
