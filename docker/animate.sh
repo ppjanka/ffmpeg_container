@@ -28,8 +28,9 @@ echo $output_dir
 
 # Process using ffmpeg
 docker run --rm \
+ -u $(id -u):$(id -g) \
  --mount src="$input_dir",target='/workdir/input',type=bind \
  --mount src="$output_dir",target='/workdir/output',type=bind \
  docker-ffmpeg /bin/bash \
   -c "cd /workdir && \
-      ffmpeg -threads $nproc -y -r 20 -f image2 -i \"input/comparison_%*.png\" -f mp4 -q:v 0 -vcodec mpeg4 -r 20 output/$(basename output_name)"
+      ffmpeg -threads $nproc -y -r 20 -f image2 -i \"input/comparison_%*.png\" -f mp4 -q:v 0 -vcodec mpeg4 -r 20 output/$(basename $output_name)"
