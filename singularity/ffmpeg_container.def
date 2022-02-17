@@ -8,7 +8,7 @@ From: ubuntu:20.04
 
 %post
   # build-time variables
-  nproc=4 # number of processors to use for the build, '' for all available
+  nproc=8 # number of processors to use for the build, '' for all available
   # 0) initialize
   mkdir -p /opt/ffmpeg
   mkdir -p /opt/ffmpeg/ffmpeg_sources /opt/ffmpeg/bin
@@ -142,6 +142,3 @@ From: ubuntu:20.04
 %environment
   export SHELL='/bin/bash'
   export PATH="/opt/ffmpeg/bin:$PATH"
-
-%runscript
-  cd /workdir

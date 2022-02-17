@@ -30,5 +30,6 @@ echo $output_dir
 singularity exec \
  --bind "$input_dir":'/workdir/input' \
  --bind "$output_dir":'/workdir/output' \
+ --pwd /workdir \
  ffmpeg_container.sif \
- ffmpeg -threads $nproc -y -r 20 -f image2 -i \"input/comparison_%*.png\" -f mp4 -q:v 0 -vcodec mpeg4 -r 20 output/$(basename $output_name)
+ ffmpeg -threads $nproc -y -r 20 -f image2 -i "input/comparison_%*.png" -f mp4 -q:v 0 -vcodec mpeg4 -r 20 "output/$(basename $output_name)"
